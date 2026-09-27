@@ -1,0 +1,8 @@
+{
+    "name": "@classificacaomsgstreams/message-classification",
+    "private": true,
+    "scripts": {
+        "build": "composer install --no-interaction",
+        "test": "composer exec phpunit"
+    }
+}

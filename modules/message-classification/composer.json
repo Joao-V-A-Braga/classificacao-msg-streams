@@ -1,0 +1,30 @@
+{
+    "name": "classificacaomsgstreams/message-classification",
+    "description": "Business module: message-classification",
+    "type": "library",
+    "license": "proprietary",
+    "repositories": [{ "type": "path", "url": "../../packages/shared" }],
+    "require": {
+        "php": ">=8.2",
+        "classificacao-msg-streams/shared": "*@dev"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^11.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "ClassificacaoMsgStreams\\MessageClassification\\": "src/"
+        },
+        "classmap": [
+            "src/"
+        ]
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "ClassificacaoMsgStreams\\MessageClassification\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": "phpunit"
+    }
+}

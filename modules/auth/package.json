@@ -1,0 +1,8 @@
+{
+    "name": "@classificacao-msg-streams/auth",
+    "private": true,
+    "scripts": {
+        "build": "docker compose -f ../../docker-compose.yml run --rm php composer install --no-interaction --working-dir=modules/auth",
+        "test": "docker compose -f ../../docker-compose.yml run --rm php composer exec --working-dir=modules/auth phpunit"
+    }
+}

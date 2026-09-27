@@ -1,0 +1,33 @@
+node_modules/
+.turbo/
+dist/
+build/
+.next/
+out/
+vendor/
+.env
+.env.local
+.env.*.local
+apps/backend/var/
+apps/backend/vendor/
+apps/backend/.env.local
+
+# misc
+.DS_Store
+*.log
+*Zone.Identifier
+.phpunit.result.cache
+.phpunit.cache/
+
+# apps/ingestion (Python, uv)
+apps/ingestion/.venv/
+apps/ingestion/**/__pycache__/
+apps/ingestion/.pytest_cache/
+apps/ingestion/*.egg-info/
+
+# Logs do supervisor/servico de ingestao
+apps/ingestion/logs/
+
+# Specs e configuracao do Claude Code (locais, fora do repositorio)
+.specs/
+.claude/

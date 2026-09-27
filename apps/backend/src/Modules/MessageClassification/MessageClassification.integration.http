@@ -1,0 +1,102 @@
+@baseUrl = http://localhost:8000
+# Chave real só em apps/backend/.env.local (MESSAGE_INGESTION_API_KEY), não versionada.
+@ingestionApiKey = REPLACE_WITH_LOCAL_MESSAGE_INGESTION_API_KEY
+
+### Registrar e logar um usuário (para as rotas /monitors)
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{"name": "Teste Monitor", "email": "monitor-http@test.com", "password": "Senha123!"}
+
+###
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{"email": "monitor-http@test.com", "password": "Senha123!"}
+
+### Criar monitoramento (nasce pausado) -> 201
+# @name create
+POST {{baseUrl}}/monitors
+Authorization: Bearer {{login.response.body.token}}
+Content-Type: application/json
+
+{
+  "name": "Live de teste",
+  "sourceType": "youtube_live",
+  "url": "https://www.youtube.com/watch?v=jfKfPfyJRdk",
+  "tags": [{"name": "pergunta", "description": "a question"}, {"name": "elogio"}]
+}
+
+### URL de outra plataforma -> 422 (monitor.url.source.mismatch)
+POST {{baseUrl}}/monitors
+Authorization: Bearer {{login.response.body.token}}
+Content-Type: application/json
+
+{"name": "x", "sourceType": "youtube_live", "url": "https://www.instagram.com/p/abc/", "tags": []}
+
+### Listar os monitoramentos do usuário -> 200
+GET {{baseUrl}}/monitors
+Authorization: Bearer {{login.response.body.token}}
+
+### Adicionar tag (pausado) -> 200
+POST {{baseUrl}}/monitors/{{create.response.body.monitor.id}}/tags
+Authorization: Bearer {{login.response.body.token}}
+Content-Type: application/json
+
+{"name": "spam", "description": "advertising or links"}
+
+### Ingerir com o monitoramento pausado -> 409 (monitor.not_running)
+POST {{baseUrl}}/ingestion/monitors/{{create.response.body.monitor.id}}/messages
+X-Ingestion-Api-Key: {{ingestionApiKey}}
+Content-Type: application/json
+
+{"externalId": "yt-1", "authorName": "viewer", "text": "Quanto custa?"}
+
+### Iniciar -> 200 (status running, startedAt = agora)
+POST {{baseUrl}}/monitors/{{create.response.body.monitor.id}}/start
+Authorization: Bearer {{login.response.body.token}}
+
+### Editar tag rodando -> 409 (monitor.must_be_paused)
+DELETE {{baseUrl}}/monitors/{{create.response.body.monitor.id}}/tags/spam
+Authorization: Bearer {{login.response.body.token}}
+
+### Runner: monitoramentos rodando -> 200
+GET {{baseUrl}}/ingestion/monitors
+X-Ingestion-Api-Key: {{ingestionApiKey}}
+
+### Runner: reportar estado -> 200
+POST {{baseUrl}}/ingestion/monitors/{{create.response.body.monitor.id}}/state
+X-Ingestion-Api-Key: {{ingestionApiKey}}
+Content-Type: application/json
+
+{"state": "watching", "detail": "Monitorando o chat da live."}
+
+### Runner: ingerir (classifica com o Laya na mesma requisição) -> 201
+POST {{baseUrl}}/ingestion/monitors/{{create.response.body.monitor.id}}/messages
+X-Ingestion-Api-Key: {{ingestionApiKey}}
+Content-Type: application/json
+
+{"externalId": "yt-1", "authorName": "viewer", "text": "Quanto custa?", "receivedAt": "2026-09-26T22:00:00Z"}
+
+### Mesmo externalId de novo -> 200 com "duplicate": true
+POST {{baseUrl}}/ingestion/monitors/{{create.response.body.monitor.id}}/messages
+X-Ingestion-Api-Key: {{ingestionApiKey}}
+Content-Type: application/json
+
+{"externalId": "yt-1", "authorName": "viewer", "text": "Quanto custa?"}
+
+### Sem chave de API -> 401
+GET {{baseUrl}}/ingestion/monitors
+
+### Mensagens do monitoramento (mais novas primeiro, filtro opcional por tag) -> 200
+GET {{baseUrl}}/monitors/{{create.response.body.monitor.id}}/messages?perPage=20&label=pergunta
+Authorization: Bearer {{login.response.body.token}}
+
+### Pausar -> 200
+POST {{baseUrl}}/monitors/{{create.response.body.monitor.id}}/pause
+Authorization: Bearer {{login.response.body.token}}
+
+### Excluir (e as mensagens dele) -> 204
+DELETE {{baseUrl}}/monitors/{{create.response.body.monitor.id}}
+Authorization: Bearer {{login.response.body.token}}

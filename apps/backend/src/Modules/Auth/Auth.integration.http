@@ -1,0 +1,48 @@
+@baseUrl = http://localhost:8000
+@scenarioVersion = 12
+
+### Registro válido -> 201, retorna o usuário criado (sem password)
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "name": "Ada Lovelace",
+  "email": "ada.{{scenarioVersion}}@example.com",
+  "password": "S3nhaForte!123"
+}
+
+### Registro com e-mail duplicado -> 409
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "name": "Ada Lovelace",
+  "email": "ada.{{scenarioVersion}}@example.com",
+  "password": "S3nhaForte!123"
+}
+
+### Login válido -> 200, captura o token para os cenários seguintes
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "ada.{{scenarioVersion}}@example.com",
+  "password": "S3nhaForte!123"
+}
+
+### Login com senha errada -> 401
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "ada.{{scenarioVersion}}@example.com",
+  "password": "senha-errada"
+}
+
+### GET /auth/me com token válido -> 200
+GET {{baseUrl}}/auth/me
+Authorization: Bearer {{login.response.body.token}}
+
+### GET /auth/me sem Authorization -> 401
+GET {{baseUrl}}/auth/me

@@ -1,0 +1,22 @@
+{
+    "name": "app",
+    "private": true,
+    "workspaces": [
+        "apps/*",
+        "modules/*",
+        "packages/*"
+    ],
+    "scripts": {
+        "build": "turbo run build",
+        "lint": "turbo run lint",
+        "check-types": "turbo run check-types",
+        "dev": "turbo run dev"
+    },
+    "devDependencies": {
+        "turbo": "^2.10.12"
+    },
+    "engines": {
+        "node": ">=20"
+    },
+    "packageManager": "npm@12.0.2"
+}

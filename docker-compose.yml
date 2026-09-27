@@ -1,0 +1,57 @@
+services:
+  php:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+      args:
+        UID: "1000"
+        GID: "1000"
+    working_dir: /app
+    volumes:
+      - .:/app
+    ports:
+      - '8000:8000'
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      # O servidor embutido do PHP atende uma requisicao por vez: sem workers, cada mensagem ingerida
+      # (que espera o Laya classificar) enfileira os cliques do app atras dela.
+      PHP_CLI_SERVER_WORKERS: '8'
+    command: sh -c "php apps/backend/bin/console doctrine:migrations:migrate --no-interaction && php -S 0.0.0.0:8000 -t apps/backend/public"
+  realtime:
+    # WebSocket hub (apps/realtime, no npm dependencies): the backend publishes monitor/message
+    # events to it and it forwards them to the browser tabs of the monitor owner.
+    image: node:22-alpine
+    working_dir: /app
+    volumes:
+      - ./apps/realtime:/app
+    env_file:
+      - apps/backend/.env.local
+    environment:
+      PORT: '8200'
+    ports:
+      - '8200:8200'
+    command: node src/server.js
+    restart: unless-stopped
+  postgres:
+    image: postgres:16-alpine
+    container_name: app-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: app
+      POSTGRES_PASSWORD: docker
+      POSTGRES_DB: app_db
+    ports:
+      - '5687:5432'
+    volumes:
+      - app-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U app']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  app-postgres-data:
+    driver: local

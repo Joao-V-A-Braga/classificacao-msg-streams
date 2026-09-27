@@ -1,0 +1,14 @@
+{
+  "name": "realtime",
+  "version": "0.1.0",
+  "private": true,
+  "description": "WebSocket hub: forwards monitor/message events published by the backend to the user's open tabs.",
+  "type": "module",
+  "scripts": {
+    "start": "node src/server.js",
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

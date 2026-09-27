@@ -1,0 +1,8 @@
+{
+    "name": "@classificacao-msg-streams/backend",
+    "private": true,
+    "scripts": {
+        "build": "docker compose -f ../../docker-compose.yml run --rm php composer install --no-interaction --working-dir=apps/backend",
+        "test": "docker compose -f ../../docker-compose.yml run --rm php composer exec --working-dir=apps/backend phpunit"
+    }
+}
